@@ -164,7 +164,7 @@ string blockencrypt(string key, string file){
 		for(int i = 0; i < padding; i++){
 			file = file + "10000000";
 		}
-		cout << "file after padding: " << file << "\n";
+		//cout << "file after padding: " << file << "\n";
 	}
 	
 	//cout << "DONE PADDING\n";
@@ -173,19 +173,19 @@ string blockencrypt(string key, string file){
 	//XOR WORKS AS DESCRIBED
 	string paddedXORed = stringxor(key, file);
 	
-	cout << "After xor: " << paddedXORed.length() << "\n";
+	//cout << "After xor: " << paddedXORed.length() << "\n";
 
 	//PASS TO SWAP AND RETURiN
 	//BROKEN
 	string swapped = swap(key, paddedXORed);
-	cout << "After swap: " << swapped.length() << "\n";
+	//cout << "After swap: " << swapped.length() << "\n";
 	return swapped;
 }
 
 
 //TODO FIX SWAP
 string blockdecrypt(string key, string file){
-	cout<< "file: " << file << "\n";
+	//cout<< "file: " << file << "\n";
 	string swapped = swap(key, file);
 
 	string bits = "";
@@ -193,11 +193,11 @@ string blockdecrypt(string key, string file){
       		bits += bitset<8>(swapped.c_str()[i]).to_string();
   	}
 	
-	cout<< "swapped file: " << bits << "\n";
+	//cout<< "swapped file: " << bits << "\n";
 
 	string swapXOR = stringxor(key, bits);
 
-	cout << "file after unpadding: " << swapXOR << "\n";
+	//cout << "file after unpadding: " << swapXOR << "\n";
 
 	//UNPAD DATA
 	for(int i = 0; i < swapXOR.length(); i+=8){
@@ -214,15 +214,15 @@ string blockdecrypt(string key, string file){
                 result += c;
         }
 	
-	cout << "End: " << result.length() << "\n";
+	//cout << "End: " << result.length() << "\n";
 
         return result;
 }
 
 //FIXME
 string swap(string key, string file){
-	cout << "SWAP\n";
-	cout << "Before swap: " << file.length() << "\n";
+	//cout << "SWAP\n";
+	//cout << "Before swap: " << file.length() << "\n";
 	string readytoswap = "";
 
 	//TURNING BINARYY INTO CHARS SEEMS TO WORK AS DEMONSTRATED IN THE STREAM CYPHER
@@ -232,7 +232,7 @@ string swap(string key, string file){
 		readytoswap += c;
 	}
 
-	cout << "During Swap: " << readytoswap << "\n";
+	//cout << "During Swap: " << readytoswap << "\n";
 
 	string keychars = "";
 	for(int i = 0; i < key.length(); i+=8){
@@ -250,7 +250,7 @@ string swap(string key, string file){
 	string b = "";
 	for(int start = 0; start < end; start++){
 		if(((int)keychars[j] % 2) == 1){
-			cout << "Before Swap: " << readytoswap << "\n";
+			//cout << "Before Swap: " << readytoswap << "\n";
 			//std::swap<char>(readytoswap[start], readytoswap[end]);
 			a += readytoswap[start];
 			cout << a << "\n";
@@ -259,7 +259,7 @@ string swap(string key, string file){
 			
 			readytoswap.replace(end, 1, a);
 			readytoswap.replace(start, 1, b);
-			cout << "After Swap: " << readytoswap << "\n";
+			//cout << "After Swap: " << readytoswap << "\n";
 			end--;
 			a = "";
 			b = "";
@@ -300,7 +300,7 @@ std::string readfile(string filename){
 		 // read byte by byte
         	bitstring += bits_in_byte(byte(c)).to_string() ; // append as string of '0' '1'
 	}
-	cout << "original file: " << i << "\n";
+	//cout << "original file: " << i << "\n";
     	return bitstring ;
 }
 
@@ -309,7 +309,7 @@ std::string readfile(string filename){
 std::string stringxor(string key, string file){
 	//cout << "STRINGXOR\n";
 	//cout << "key: " << key << "\n";
-	cout << "file: " << file.length() << "\n";
+	//cout << "file: " << file.length() << "\n";
 	string result = "";
 	int j = key.length() - 1;
 	for(int i = file.length() - 1; i > 0; i--){
@@ -323,7 +323,7 @@ std::string stringxor(string key, string file){
 		//cout << "result: " << result <<"\n";
         }
 
-	cout << "result: " << result.length() <<"\n";
+	//cout << "result: " << result.length() <<"\n";
 	//cout << "DONE WITH XOR\n";
 	return result;
 }
