@@ -1,12 +1,13 @@
 #include "PA1.h"
 #include <fstream>
 #include <iostream>
-#include <vector>
 #include <algorithm>
 #include <limits>
 #include <bitset>
 #include <iomanip>
 #include <sstream>
+#include <stdio.h>
+#include <string.h>
 
 // http://en.cppreference.com/w/cpp/language/type_alias
 using byte = unsigned char ;
@@ -152,71 +153,99 @@ int main(int argc, char* argv[]){
 
 
 string blockencrypt(string key, string file){
+	//cout << "BLOCK ENCRYPT\n";
 	//PAD DATA IF NECESSARY
 	int padding = file.length() % 64;
+	//cout << "padding: " << padding << "\n";
+	padding = padding/8;
+	//cout << "padding: " << padding << "\n";
 	if(padding != 0){
-		for(int i = 0; i < padding; i + 8){
-			file + "10000000";
+		for(int i = 0; i < padding; i++){
+			file = file + "10000000";
 		}
 		cout << "file after padding: " << file << "\n";
 	}
 	
+	//cout << "DONE PADDING\n";
+	
 	//PASS TO XOR
 	string paddedXORed = stringxor(key, file);
 	
+	cout << "After xor: " << paddedXORed.length() << "\n";
+
 	//PASS TO SWAP AND RETURN
-	return swap(key, paddedXORed);
+	string swapped = swap(key, paddedXORed);
+	cout << "After swap: " << swapped.length() << "\n";
+	return swapped;
 }
 
 
 
 string blockdecrypt(string key, string file){
-
+	cout<< "file: " << file << "\n";
 	string swapped = swap(key, file);
+
+	string bits = "";
+	for (std::size_t i = 0; i < swapped.size(); ++i){
+      		bits += bitset<8>(swapped.c_str()[i]).to_string();
+  	}
 	
-	string swapXOR = stringxor(key, swapped);
+	cout<< "swapped file: " << bits << "\n";
+
+	string swapXOR = stringxor(key, bits);
+
+	cout << "file after unpadding: " << swapXOR << "\n";
 
 	//UNPAD DATA
-	for(int i = 0; i < swapXOR.length(); i+8){
+	for(int i = 0; i < swapXOR.length(); i+=8){
 		string bytestring = swapXOR.substr(i, 8);
 		if(bytestring == "10000000"){
 			swapXOR = swapXOR.substr(0, i-1);
 		}
 	}
 
-        return swapXOR;
+	char c;
+	string result = "";
+        for(int i = 0; i < swapXOR.length(); i+=8){
+                c = static_cast<char>(std::bitset<8>(swapXOR.substr(i, 8)).to_ulong());
+                result += c;
+        }
+	
+	cout << "End: " << result.length() << "\n";
+
+        return result;
 }
 
 
 string swap(string key, string file){
+	cout << "SWAP\n";
+	cout << "Before swap: " << file.length() << "\n";
 	string readytoswap = "";
-	std::bitset<8> bs;
-	stringstream ss;
-	std::istringstream f(file);
-	while(f >> bs){
-        	ss << char(bs.to_ulong());
+
+	char c;
+	for(int i = 0; i < file.length(); i+=8){
+		c = static_cast<char>(std::bitset<8>(file.substr(i, 8)).to_ulong());
+		readytoswap += c;
 	}
-	ss >> readytoswap;
+
+	cout << "During Swap: " << readytoswap.length() << "\n";
 
 	string keychars = "";
-	std::bitset<8> keybs;
-	stringstream ss1;
-	std::istringstream k(key);
-        while(k >> keybs){
-                ss1 << char(keybs.to_ulong());
+	for(int i = 0; i < key.length(); i+=8){
+                c = static_cast<char>(std::bitset<8>(key.substr(i, 8)).to_ulong());
+                keychars += c;
         }
-	ss1 >> keychars;
 
 
 	int j = 0;
-	int end = readytoswap.size() - 1;
+	int end = readytoswap.length() - 1;
 	for(int start = 0; start < end; start++){
 		if((keychars[j] % 2) == 1){
-			std::swap(readytoswap[start], readytoswap[end]);
+			std::swap<char>(readytoswap[start], readytoswap[end]);
 			end--;
 		}
 		j++;
-		if(j == keybs.size()){
+		if(j == keychars.length()){
 			j = 0;
 		}
 	}
@@ -237,26 +266,37 @@ std::string readfile(string filename){
     	std::ifstream file(filename, std::ios::binary) ; // open in binary mode
 
     	char c ;
+	int i = 0;
     	while(file.get(c)){
+		i++;
 		 // read byte by byte
         	bitstring += bits_in_byte(byte(c)).to_string() ; // append as string of '0' '1'
 	}
-
+	cout << "original file: " << i << "\n";
     	return bitstring ;
 }
 
 
 
 std::string stringxor(string key, string file){
+	//cout << "STRINGXOR\n";
+	//cout << "key: " << key << "\n";
+	//cout << "file: " << file << "\n";
 	string result = "";
-	for(int i = 0; i < file.length(); i++){
-		for(int j = 0; j < key.length(); j++){
-                	result[i] = ((key[j]-'0') ^ (file[i]-'0')) + '0';
-			if(j + 1 == key.length()){
-				j = 0;
-			}
+	int j = key.length() - 1;
+	for(int i = file.length() - 1; i > 0; i--){
+		result += ((key[j]-'0') ^ (file[i]-'0')) + '0';
+		if(j-1 == -1){
+			j = key.length() - 1;
 		}
+		else{
+			j--;
+		}
+		//cout << "result: " << result <<"\n";
         }
+
+	cout << "result: " << result <<"\n";
+	//cout << "DONE WITH XOR\n";
 	return result;
 }
 
