@@ -151,8 +151,9 @@ int main(int argc, char* argv[]){
 }
 
 
-
+//TODO FIX SWAP
 string blockencrypt(string key, string file){
+	//PADDING WORKS AS DESCRIBED
 	//cout << "BLOCK ENCRYPT\n";
 	//PAD DATA IF NECESSARY
 	int padding = file.length() % 64;
@@ -169,18 +170,20 @@ string blockencrypt(string key, string file){
 	//cout << "DONE PADDING\n";
 	
 	//PASS TO XOR
+	//XOR WORKS AS DESCRIBED
 	string paddedXORed = stringxor(key, file);
 	
 	cout << "After xor: " << paddedXORed.length() << "\n";
 
-	//PASS TO SWAP AND RETURN
+	//PASS TO SWAP AND RETURiN
+	//BROKEN
 	string swapped = swap(key, paddedXORed);
 	cout << "After swap: " << swapped.length() << "\n";
 	return swapped;
 }
 
 
-
+//TODO FIX SWAP
 string blockdecrypt(string key, string file){
 	cout<< "file: " << file << "\n";
 	string swapped = swap(key, file);
@@ -216,19 +219,20 @@ string blockdecrypt(string key, string file){
         return result;
 }
 
-
+//FIXME
 string swap(string key, string file){
 	cout << "SWAP\n";
 	cout << "Before swap: " << file.length() << "\n";
 	string readytoswap = "";
 
+	//TURNING BINARYY INTO CHARS SEEMS TO WORK AS DEMONSTRATED IN THE STREAM CYPHER
 	char c;
 	for(int i = 0; i < file.length(); i+=8){
 		c = static_cast<char>(std::bitset<8>(file.substr(i, 8)).to_ulong());
 		readytoswap += c;
 	}
 
-	cout << "During Swap: " << readytoswap.length() << "\n";
+	cout << "During Swap: " << readytoswap << "\n";
 
 	string keychars = "";
 	for(int i = 0; i < key.length(); i+=8){
@@ -237,12 +241,28 @@ string swap(string key, string file){
         }
 
 
+	//FIXME
+	//THE ISSUE LIES IN THIS SECTION
+	//IT IS SOMEHOW GRABBING THE WRONG CHARACTERS FOR THE SWAP
 	int j = 0;
 	int end = readytoswap.length() - 1;
+	string a = "";
+	string b = "";
 	for(int start = 0; start < end; start++){
-		if((keychars[j] % 2) == 1){
-			std::swap<char>(readytoswap[start], readytoswap[end]);
+		if(((int)keychars[j] % 2) == 1){
+			cout << "Before Swap: " << readytoswap << "\n";
+			//std::swap<char>(readytoswap[start], readytoswap[end]);
+			a += readytoswap[start];
+			cout << a << "\n";
+			b += readytoswap[end];
+			cout << b << "\n";
+			
+			readytoswap.replace(end, 1, a);
+			readytoswap.replace(start, 1, b);
+			cout << "After Swap: " << readytoswap << "\n";
 			end--;
+			a = "";
+			b = "";
 		}
 		j++;
 		if(j == keychars.length()){
@@ -254,13 +274,21 @@ string swap(string key, string file){
 
 }
 
-
+//WORKS PERFECTLY
 string stream(string key, string file){
-        return stringxor(key, file);
+	string XORed = stringxor(key, file);
+	string result = "";
+	char c;
+        for(int i = 0; i < file.length(); i+=8){
+                c = static_cast<char>(std::bitset<8>(file.substr(i, 8)).to_ulong());
+                result += c;
+        }
+        return result;
 }
 
 
-
+//READS FILE INTO A STRING OF BITS.
+//WORKS AS TESTED WITH STREAM CYPHER
 std::string readfile(string filename){
 	std::string bitstring;
     	std::ifstream file(filename, std::ios::binary) ; // open in binary mode
@@ -277,15 +305,15 @@ std::string readfile(string filename){
 }
 
 
-
+//TESTED WITH STREAM CYPHER AND WORKS
 std::string stringxor(string key, string file){
 	//cout << "STRINGXOR\n";
 	//cout << "key: " << key << "\n";
-	//cout << "file: " << file << "\n";
+	cout << "file: " << file.length() << "\n";
 	string result = "";
 	int j = key.length() - 1;
 	for(int i = file.length() - 1; i > 0; i--){
-		result += ((key[j]-'0') ^ (file[i]-'0')) + '0';
+		result += (((key[j]-'0') ^ (file[i]-'0')) + '0');
 		if(j-1 == -1){
 			j = key.length() - 1;
 		}
@@ -295,7 +323,7 @@ std::string stringxor(string key, string file){
 		//cout << "result: " << result <<"\n";
         }
 
-	cout << "result: " << result <<"\n";
+	cout << "result: " << result.length() <<"\n";
 	//cout << "DONE WITH XOR\n";
 	return result;
 }
