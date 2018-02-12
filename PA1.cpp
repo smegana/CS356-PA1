@@ -8,6 +8,7 @@
 #include <sstream>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 // http://en.cppreference.com/w/cpp/language/type_alias
 using byte = unsigned char ;
@@ -156,6 +157,7 @@ string blockencrypt(string key, string file){
 	//PADDING WORKS AS DESCRIBED
 	//cout << "BLOCK ENCRYPT\n";
 	//PAD DATA IF NECESSARY
+	//cout << file << "\n";
 	int padding = file.length() % 64;
 	//cout << "padding: " << padding << "\n";
 	padding = padding/8;
@@ -193,19 +195,22 @@ string blockdecrypt(string key, string file){
       		bits += bitset<8>(swapped.c_str()[i]).to_string();
   	}
 	
-	//cout<< "swapped file: " << bits << "\n";
+	//cout<< "swapped file: " << bits.length() << "\n";
 
 	string swapXOR = stringxor(key, bits);
 
-	//cout << "file after unpadding: " << swapXOR << "\n";
+	//cout << "file before unpadding: " << swapXOR.length() << "\n";
 
 	//UNPAD DATA
 	for(int i = 0; i < swapXOR.length(); i+=8){
 		string bytestring = swapXOR.substr(i, 8);
 		if(bytestring == "10000000"){
-			swapXOR = swapXOR.substr(0, i-1);
+			swapXOR = swapXOR.substr(0, i-8);
 		}
 	}
+
+	//cout << "file after unpadding: " << swapXOR.length() << "\n";
+
 
 	char c;
 	string result = "";
@@ -253,9 +258,9 @@ string swap(string key, string file){
 			//cout << "Before Swap: " << readytoswap << "\n";
 			//std::swap<char>(readytoswap[start], readytoswap[end]);
 			a += readytoswap[start];
-			cout << a << "\n";
+			//cout << a << "\n";
 			b += readytoswap[end];
-			cout << b << "\n";
+			//cout << b << "\n";
 			
 			readytoswap.replace(end, 1, a);
 			readytoswap.replace(start, 1, b);
@@ -269,6 +274,9 @@ string swap(string key, string file){
 			j = 0;
 		}
 	}
+
+	//cout << file << "\n";
+	//cout << "After Swap: " << result.length() << "\n";
 	
 	return readytoswap;
 
@@ -311,14 +319,14 @@ std::string stringxor(string key, string file){
 	//cout << "key: " << key << "\n";
 	//cout << "file: " << file.length() << "\n";
 	string result = "";
-	int j = key.length() - 1;
-	for(int i = file.length() - 1; i > 0; i--){
+	int j = 0;
+	for(int i = 0; i < file.length(); i++){
 		result += (((key[j]-'0') ^ (file[i]-'0')) + '0');
-		if(j-1 == -1){
-			j = key.length() - 1;
+		if(j+1 == key.length()){
+			j = 0;
 		}
 		else{
-			j--;
+			j++;
 		}
 		//cout << "result: " << result <<"\n";
         }
